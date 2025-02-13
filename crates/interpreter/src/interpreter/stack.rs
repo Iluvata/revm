@@ -1,5 +1,6 @@
 use crate::primitives::{B256, U256};
 use crate::{alloc::vec::Vec, InstructionResult};
+use core::ptr;
 
 pub const STACK_LIMIT: usize = 1024;
 
@@ -227,7 +228,8 @@ impl Stack {
         } else {
             // Safety: check for out of bounds is done above and it makes this safe to do.
             unsafe {
-                *self.data.get_unchecked_mut(len) = *self.data.get_unchecked(len - N);
+                let ptr = self.data.as_mut_ptr().add(len);
+                ptr::copy_nonoverlapping(ptr.sub(N), ptr, 1);
                 self.data.set_len(len + 1);
             }
             None
